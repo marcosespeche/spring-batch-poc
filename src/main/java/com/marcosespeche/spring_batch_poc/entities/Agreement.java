@@ -31,4 +31,8 @@ public class Agreement extends BaseEntity{
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "customer", nullable = false)
     private Customer customer;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "project", nullable = false)
+    private Project project;
 }

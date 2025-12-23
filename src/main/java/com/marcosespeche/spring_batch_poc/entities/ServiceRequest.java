@@ -30,6 +30,10 @@ public class ServiceRequest extends BaseEntity {
     @JoinColumn(name = "agreement", nullable = false)
     private Agreement agreement;
 
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "type", nullable = false)
+    private ServiceRequestType type;
+
     private Customer getCustomer() {
         return this.agreement.getCustomer();
     }
