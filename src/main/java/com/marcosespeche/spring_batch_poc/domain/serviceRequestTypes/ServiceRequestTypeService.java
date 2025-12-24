@@ -8,6 +8,7 @@ import com.marcosespeche.spring_batch_poc.mappers.ServiceRequestTypeMapper;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -17,6 +18,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
+@Slf4j
 public class ServiceRequestTypeService {
 
     private final ServiceRequestTypeRepository serviceRequestTypeRepository;
@@ -45,7 +47,7 @@ public class ServiceRequestTypeService {
     @Transactional
     public ReadServiceRequestTypeDTO create(@Valid CreateServiceRequestTypeDTO dto) {
 
-        if (serviceRequestTypeRepository.existsByName(dto.name())) throw new IllegalArgumentException("Service Request Type's name already exists");
+        if (serviceRequestTypeRepository.existsByName(dto.name())) throwDuplicatedNameException(dto.name());
 
         ServiceRequestType serviceRequestType = ServiceRequestType.builder()
                 .name(dto.name())
@@ -55,6 +57,7 @@ public class ServiceRequestTypeService {
                 .build();
 
         serviceRequestTypeRepository.save(serviceRequestType);
+        log.info("Service Request Type with ID {} created", serviceRequestType.getId());
 
         return serviceRequestTypeMapper.toReadServiceRequestDTO(serviceRequestType);
     }
@@ -62,33 +65,51 @@ public class ServiceRequestTypeService {
     @Transactional
     public ReadServiceRequestTypeDTO update(Long id, @Valid UpdateServiceRequestTypeDTO dto) {
 
-        ServiceRequestType serviceRequestType = serviceRequestTypeRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Service Request Type not found"));
+        ServiceRequestType serviceRequestType = findById(id);
 
         if (!(serviceRequestType.getName().equalsIgnoreCase(dto.name())) && serviceRequestTypeRepository.existsByName(dto.name()))
-            throw new IllegalArgumentException("Service Request Type's name already exists");
+            throwDuplicatedNameException(dto.name());
 
         serviceRequestType.setName(dto.name());
         serviceRequestType.setDescription(dto.description());
         serviceRequestType.setHourlyFee(dto.hourlyFee());
 
         serviceRequestTypeRepository.save(serviceRequestType);
+        log.info("Service Request Type with ID {} updated", id);
 
         return serviceRequestTypeMapper.toReadServiceRequestDTO(serviceRequestType);
     }
 
     @Transactional
     public ReadServiceRequestTypeDTO deleteOrRestore(Long id) {
-        ServiceRequestType serviceRequestType = serviceRequestTypeRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Service Request Type not found"));
+        ServiceRequestType serviceRequestType = findById(id);
+
+        String action = "deleted";
 
         if (serviceRequestType.getSoftDeleteDate() == null) {
             serviceRequestType.setSoftDeleteDate(LocalDateTime.now());
         } else {
             serviceRequestType.setSoftDeleteDate(null);
+            action = "restored";
         }
 
         serviceRequestTypeRepository.save(serviceRequestType);
 
+        log.info("Service Request Type with ID {} {}", id, action);
+
         return serviceRequestTypeMapper.toReadServiceRequestDTO(serviceRequestType);
     }
 
+    private ServiceRequestType findById(Long id) {
+        return serviceRequestTypeRepository.findById(id)
+                .orElseThrow(() -> {
+                    log.warn("Service Request Type with ID {} not found", id);
+                    return new EntityNotFoundException("Service Request Type not found");
+                });
+    }
+
+    private void throwDuplicatedNameException(String name) {
+        log.warn("Service Request Type with name '{}' already exists", name);
+        throw new IllegalArgumentException("Service Request Type's name already exists");
+    }
 }
