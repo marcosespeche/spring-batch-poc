@@ -1,6 +1,5 @@
 package com.marcosespeche.spring_batch_poc.aspects;
 
-import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
