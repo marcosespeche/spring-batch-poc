@@ -3,9 +3,9 @@ package com.marcosespeche.spring_batch_poc.entities;
 import com.marcosespeche.spring_batch_poc.enums.AgreementState;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDateTime;
 import java.time.YearMonth;
@@ -14,7 +14,7 @@ import java.time.YearMonth;
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@SuperBuilder
 public class Agreement extends BaseEntity{
 
     @Column(nullable = false)
