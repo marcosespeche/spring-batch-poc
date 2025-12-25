@@ -2,16 +2,15 @@ server:
   port: ${SERVER_PORT:8080}
 
 spring:
-
   application:
     name: spring-batch-poc
 
+  # Database Connection
   datasource:
     url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/spring_batch_poc}
     username: ${SPRING_DATASOURCE_USERNAME:postgres}
     password: ${SPRING_DATASOURCE_PASSWORD:root}
     driver-class-name: org.postgresql.Driver
-
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     show-sql: false
@@ -19,12 +18,18 @@ spring:
       ddl-auto: update
       show-sql: false
 
+#Swagger
 springdoc:
-
   swagger-ui:
     enabled: true
     path: /swagger-ui.html
-
   api-docs:
     enabled: true
     path: /api-docs
+
+# Actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
