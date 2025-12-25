@@ -18,7 +18,7 @@ public class LoggingAspect {
         String className = signature.getDeclaringType().getSimpleName();
         String methodName = signature.getName();
 
-        long start = System.currentTimeMillis();
+        long startTime = System.currentTimeMillis();
 
         if (log.isDebugEnabled()) {
             log.debug("{}.{}() started", className, methodName);
@@ -26,7 +26,7 @@ public class LoggingAspect {
 
         try {
             Object result = joinPoint.proceed();
-            long duration = System.currentTimeMillis() - start;
+            long duration = System.currentTimeMillis() - startTime;
 
             if (log.isDebugEnabled()) {
                 log.debug("{}.{}() finished in {}ms", className, methodName, duration);
@@ -34,7 +34,7 @@ public class LoggingAspect {
 
             return result;
         } catch (Exception e) {
-            long duration = System.currentTimeMillis() - start;
+            long duration = System.currentTimeMillis() - startTime;
 
             if (isBusinessException(e)) {
                 throw e;
@@ -47,9 +47,9 @@ public class LoggingAspect {
         }
     }
 
+
     private boolean isBusinessException(Exception e) {
-        return
-                e instanceof RuntimeException;
+        return e instanceof RuntimeException;
     }
 
 }
