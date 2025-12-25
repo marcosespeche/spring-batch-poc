@@ -1,8 +1,8 @@
-package com.marcosespeche.spring_batch_poc.domain.serviceRequestTypes;
+package com.marcosespeche.spring_batch_poc.domain.customers;
 
-import com.marcosespeche.spring_batch_poc.domain.serviceRequestTypes.dtos.CreateServiceRequestTypeDTO;
-import com.marcosespeche.spring_batch_poc.domain.serviceRequestTypes.dtos.ReadServiceRequestTypeDTO;
-import com.marcosespeche.spring_batch_poc.domain.serviceRequestTypes.dtos.UpdateServiceRequestTypeDTO;
+import com.marcosespeche.spring_batch_poc.domain.customers.dtos.CreateCustomerDTO;
+import com.marcosespeche.spring_batch_poc.domain.customers.dtos.ReadCustomerDTO;
+import com.marcosespeche.spring_batch_poc.domain.customers.dtos.UpdateCustomerDTO;
 import com.marcosespeche.spring_batch_poc.exceptions.ErrorResponseDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -19,20 +19,17 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
-@RequestMapping(path = "/api/v1/service-request-types")
-@Tag(name = "Service Request Types", description = "Service Request Type management")
-public class ServiceRequestTypeController {
+@RequestMapping(path = "/api/v1/customers")
+@Tag(name = "Customers", description = "Customers management")
+public class CustomerController {
 
     @Autowired
-    private ServiceRequestTypeService service;
-
+    private CustomerService service;
 
     @Operation(
-            summary = "Get service request types paged",
-            description = "Returns a paginated list of service request types filtered by name"
+            summary = "Get all customers paged",
+            description = "Returns all customers using pagination, filtering by name"
     )
     @ApiResponses({
             @ApiResponse(
@@ -40,8 +37,9 @@ public class ServiceRequestTypeController {
                     description = "Data fetched successfully",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = ReadServiceRequestTypeDTO.class)
-                    )),
+                            schema = @Schema(implementation = ReadCustomerDTO.class)
+                    )
+            ),
             @ApiResponse(
                     responseCode = "409",
                     description = "Invalid page data",
@@ -51,16 +49,15 @@ public class ServiceRequestTypeController {
                     )
             )
     })
-    @GetMapping(path = "")
-    public ResponseEntity<Page<ReadServiceRequestTypeDTO>> getAll(
-
-            @Parameter(description = "Page size", example = "10")
-            @RequestParam(defaultValue = "10") int pageSize,
-
-            @Parameter(description = "Page number", example = "0")
+    @GetMapping("")
+    public ResponseEntity<Page<ReadCustomerDTO>> getAllPaged(
+            @Parameter(name = "pageNumber")
             @RequestParam(defaultValue = "0") int pageNumber,
 
-            @Parameter(description = "Filter name of service request type", example = "development")
+            @Parameter(name = "pageSize")
+            @RequestParam(defaultValue = "10") int pageSize,
+
+            @Parameter(name = "nameFilter")
             @RequestParam(defaultValue = "") String filter) {
 
         return ResponseEntity.ok(service.getAllPaged(filter, PageRequest.of(pageNumber, pageSize)));
@@ -68,8 +65,8 @@ public class ServiceRequestTypeController {
 
 
     @Operation(
-            summary = "Get active service request types",
-            description = "Returns all service requests types that are active"
+            summary = "Get all active customers paged",
+            description = "Returns all active customers using pagination, filtering by name"
     )
     @ApiResponses({
             @ApiResponse(
@@ -77,7 +74,7 @@ public class ServiceRequestTypeController {
                     description = "Data fetched successfully",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = ReadServiceRequestTypeDTO.class)
+                            schema = @Schema(implementation = ReadCustomerDTO.class)
                     )
             ),
             @ApiResponse(
@@ -90,25 +87,31 @@ public class ServiceRequestTypeController {
             )
     })
     @GetMapping("/active")
-    public ResponseEntity<List<ReadServiceRequestTypeDTO>> getAllActive(
-            @Parameter(description = "Service Request Type's name to filter", example = "dev")
-            @RequestParam(required = true, defaultValue = "") String filter
-    ) {
-        return ResponseEntity.ok(service.getAllActive(filter));
+    public ResponseEntity<Page<ReadCustomerDTO>> getAllActivePaged(
+            @Parameter(name = "pageNumber")
+            @RequestParam(defaultValue = "0") int pageNumber,
+
+            @Parameter(name = "pageSize")
+            @RequestParam(defaultValue = "10") int pageSize,
+
+            @Parameter(name = "nameFilter")
+            @RequestParam(defaultValue = "") String filter) {
+
+        return ResponseEntity.ok(service.getAllActivePaged(filter, PageRequest.of(pageNumber, pageSize)));
     }
 
 
     @Operation(
-            summary = "Create a service request type",
-            description = "Creates a new service request type."
+            summary = "Create customer",
+            description = "Create a new Customer"
     )
     @ApiResponses({
             @ApiResponse(
                     responseCode = "201",
-                    description = "Service request type created successfully",
+                    description = "Customer created successfully",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = ReadServiceRequestTypeDTO.class)
+                            schema = @Schema(implementation = ReadCustomerDTO.class)
                     )
             ),
             @ApiResponse(
@@ -121,7 +124,7 @@ public class ServiceRequestTypeController {
             ),
             @ApiResponse(
                     responseCode = "409",
-                    description = "Duplicate Service Request Type's name",
+                    description = "Customer name already exists",
                     content = @Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ErrorResponseDTO.class)
@@ -129,22 +132,23 @@ public class ServiceRequestTypeController {
             )
     })
     @PostMapping("")
-    public ResponseEntity<ReadServiceRequestTypeDTO> create(@RequestBody @Valid CreateServiceRequestTypeDTO dto) {
+    public ResponseEntity<ReadCustomerDTO> create(@RequestBody @Valid CreateCustomerDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(service.create(dto));
     }
 
 
+
     @Operation(
-            summary = "Update Service Request Type",
-            description = "Update a Service Request Type"
+            summary = "Update customer",
+            description = "Update a Customer"
     )
     @ApiResponses({
             @ApiResponse(
                     responseCode = "200",
-                    description = "Updated successfully",
+                    description = "Customer updated successfully",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = ReadServiceRequestTypeDTO.class)
+                            schema = @Schema(implementation = ReadCustomerDTO.class)
                     )
             ),
             @ApiResponse(
@@ -156,16 +160,16 @@ public class ServiceRequestTypeController {
                     )
             ),
             @ApiResponse(
-                    responseCode = "404",
-                    description = "Service Request Type not found",
+                    responseCode = "409",
+                    description = "Customer name already exists",
                     content = @Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ErrorResponseDTO.class)
                     )
             ),
             @ApiResponse(
-                    responseCode = "409",
-                    description = "Duplicate name",
+                    responseCode = "404",
+                    description = "Customer not found",
                     content = @Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ErrorResponseDTO.class)
@@ -173,35 +177,36 @@ public class ServiceRequestTypeController {
             )
     })
     @PutMapping("/{id}")
-    public ResponseEntity<ReadServiceRequestTypeDTO> update (
-            @PathVariable Long id,
-            @Valid @RequestBody UpdateServiceRequestTypeDTO dto) {
+    public ResponseEntity<ReadCustomerDTO> update(@PathVariable Long id, @RequestBody @Valid UpdateCustomerDTO dto) {
         return ResponseEntity.ok(service.update(id, dto));
     }
 
 
+
     @Operation(
-            summary = "Delete or restore Service Request Type",
-            description = "Soft delete a Service Request Type, if already deleted, then restores it"
+            summary = "Delete or restore a customer",
+            description = "Delete or restore a Customer"
     )
     @ApiResponses({
             @ApiResponse(
                     responseCode = "200",
-                    description = "Deleted/restored successfully",
+                    description = "Customer deleted/restored successfully",
                     content = @Content(
-                            schema = @Schema(implementation = ReadServiceRequestTypeDTO.class)
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ReadCustomerDTO.class)
                     )
             ),
             @ApiResponse(
                     responseCode = "404",
-                    description = "Service Request Type not found",
+                    description = "Customer not found",
                     content = @Content(
+                            mediaType = "application/json",
                             schema = @Schema(implementation = ErrorResponseDTO.class)
                     )
             )
     })
     @DeleteMapping("/{id}")
-    public ResponseEntity<ReadServiceRequestTypeDTO> deleteOrRestore(@PathVariable Long id) {
+    public ResponseEntity<ReadCustomerDTO> deleteOrRestore(@PathVariable Long id) {
         return ResponseEntity.ok(service.deleteOrRestore(id));
     }
 
