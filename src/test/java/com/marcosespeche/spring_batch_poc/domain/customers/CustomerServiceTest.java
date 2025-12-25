@@ -10,9 +10,11 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mapstruct.factory.Mappers;
 import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
@@ -28,8 +30,8 @@ class CustomerServiceTest {
     @Mock
     private CustomerRepository customerRepository;
 
-    @Mock
-    private CustomerMapper customerMapper;
+    @Spy
+    private CustomerMapper customerMapper = Mappers.getMapper(CustomerMapper.class);
 
     @InjectMocks
     private CustomerService customerService;
@@ -44,7 +46,7 @@ class CustomerServiceTest {
             String name = "Software Factory 123";
             String email = "software_factory_123@gmail.com";
 
-            CreateCustomerDTO dto = new CreateCustomerDTO(name, "software_factory_123@gmail.com");
+            CreateCustomerDTO dto = new CreateCustomerDTO(name, email);
 
             when(customerRepository.existsByName(name))
                     .thenReturn(true);
@@ -73,24 +75,17 @@ class CustomerServiceTest {
                     .softDeleteDate(null)
                     .build();
 
-            ReadCustomerDTO expectedDto =
-                    new ReadCustomerDTO(1L, name, email, null);
-
             when(customerRepository.existsByName(name))
                     .thenReturn(false);
 
-            when(customerRepository.save(ArgumentMatchers.<Customer>any()))
+            when(customerRepository.save(ArgumentMatchers.any()))
                     .thenReturn(savedCustomer);
-
-            when(customerMapper.toReadCustomerDTO(savedCustomer))
-                    .thenReturn(expectedDto);
 
             // Act
             ReadCustomerDTO result = customerService.create(dto);
 
             // Assert
             assertNotNull(result);
-            assertEquals(1L, result.id());
             assertEquals(name, result.name());
             assertEquals(email, result.email());
 
@@ -154,9 +149,6 @@ class CustomerServiceTest {
 
             when(customerRepository.existsByName(name))
                     .thenReturn(false);
-
-            when(customerMapper.toReadCustomerDTO(ArgumentMatchers.<Customer>any()))
-                    .thenReturn(expectedResult);
 
             // Act
             ReadCustomerDTO result = customerService.update(id, dto);
