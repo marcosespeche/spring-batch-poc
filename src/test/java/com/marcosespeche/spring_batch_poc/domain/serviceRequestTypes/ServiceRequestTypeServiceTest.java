@@ -4,13 +4,17 @@ import com.marcosespeche.spring_batch_poc.domain.serviceRequestTypes.dtos.Create
 import com.marcosespeche.spring_batch_poc.domain.serviceRequestTypes.dtos.ReadServiceRequestTypeDTO;
 import com.marcosespeche.spring_batch_poc.domain.serviceRequestTypes.dtos.UpdateServiceRequestTypeDTO;
 import com.marcosespeche.spring_batch_poc.entities.ServiceRequestType;
+import com.marcosespeche.spring_batch_poc.mappers.ServiceRequestTypeMapper;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mapstruct.factory.Mappers;
+import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -28,6 +32,9 @@ class ServiceRequestTypeServiceTest {
 
     @Mock
     private ServiceRequestTypeRepository serviceRequestTypeRepository;
+
+    @Spy
+    private ServiceRequestTypeMapper serviceRequestTypeMapper = Mappers.getMapper(ServiceRequestTypeMapper.class);
 
     @InjectMocks
     private ServiceRequestTypeService serviceRequestTypeService;
