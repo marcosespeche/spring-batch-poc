@@ -302,4 +302,69 @@ class CustomerServiceTest {
         }
     }
 
+    @Nested
+    @DisplayName("findActiveById method")
+    class FindActiveByIdTest {
+
+        @Test
+        public void shouldThrowExceptionWhenCustonerDoesNotExist() {
+            // Arrange
+            Long customerId = 1L;
+
+            when(customerRepository.findById(customerId))
+                    .thenReturn(Optional.empty());
+
+            // Act & Assert
+            EntityNotFoundException exception = assertThrows(
+                    EntityNotFoundException.class,
+                    () -> customerService.findActiveById(customerId)
+            );
+
+            assertEquals("Customer not found", exception.getMessage());
+        }
+
+        @Test
+        public void shouldThrowExceptionWhenCustonerIsNotActive() {
+            // Arrange
+            Long customerId = 1L;
+
+            Customer inactiveCustomer = Customer.builder()
+                    .id(customerId)
+                    .softDeleteDate(LocalDateTime.now())
+                    .build();
+
+            when(customerRepository.findById(customerId))
+                    .thenReturn(Optional.of(inactiveCustomer));
+
+            // Act & Assert
+            IllegalArgumentException exception = assertThrows(
+                    IllegalArgumentException.class,
+                    () -> customerService.findActiveById(customerId)
+            );
+
+            assertEquals("Customer is not active", exception.getMessage());
+        }
+
+        @Test
+        public void shouldReturnCustomer() {
+            // Arrange
+            Long customerId = 1L;
+
+            Customer activeCustomer = Customer.builder()
+                    .id(customerId)
+                    .softDeleteDate(null)
+                    .build();
+
+            when(customerRepository.findById(customerId))
+                    .thenReturn(Optional.of(activeCustomer));
+
+            // Act
+            Customer result = customerService.findActiveById(customerId);
+
+            // Assert
+            assertNotNull(result);
+            assertEquals(customerId, result.getId());
+        }
+    }
+
 }

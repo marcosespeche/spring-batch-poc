@@ -64,7 +64,7 @@ public class CustomerService {
     @Transactional
     public ReadCustomerDTO update(Long id, @Valid UpdateCustomerDTO dto) {
 
-        Customer customer = findById(id);
+        Customer customer = findActiveById(id);
 
         if (!customer.getName().equalsIgnoreCase(dto.name())) validateDuplicatedName(dto.name());
 
@@ -103,11 +103,28 @@ public class CustomerService {
     }
 
     @Transactional
+    public Customer findActiveById(Long id) {
+        Customer customer = customerRepository.findById(id)
+                .orElseThrow(() -> {
+                    log.warn("Customer with ID {} cannot be found", id);
+                    return new EntityNotFoundException("Customer not found");
+                });
+
+        if (customer.getSoftDeleteDate() != null) {
+            log.warn("Customer with ID {} is not active", id);
+            throw new IllegalArgumentException("Customer is not active");
+        }
+
+        return customer;
+    }
+
+    @Transactional
     public Customer findById(Long id) {
-        return customerRepository.findById(id).orElseThrow(() -> {
-            log.warn("Customer with ID {} cannot be found", id);
-            return new EntityNotFoundException("Customer not found");
-        });
+        return customerRepository.findById(id)
+                .orElseThrow(() -> {
+                    log.warn("Customer with ID {} cannot be found", id);
+                    return new EntityNotFoundException("Customer not found");
+                });
     }
 
     private void validateDuplicatedName(String name) {
