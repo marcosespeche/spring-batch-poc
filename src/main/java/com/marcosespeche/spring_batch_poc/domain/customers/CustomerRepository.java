@@ -14,4 +14,6 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
     Page<Customer> findByNameContainingIgnoreCaseAndSoftDeleteDateIsNull(String name, Pageable pageable);
 
     boolean existsByName(String name);
+
+    boolean existsByEmail(String email);
 }

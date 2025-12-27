@@ -61,7 +61,30 @@ class CustomerServiceTest {
         }
 
         @Test
-        public void shouldCreateCustomerWhenUniqueName() {
+        public void shouldThrowExceptionWhenDuplicatedEmail() {
+            // Arrange
+            String name = "Software Factory 123";
+            String email = "software_factory_123@gmail.com";
+
+            CreateCustomerDTO dto = new CreateCustomerDTO(name, email);
+
+            when(customerRepository.existsByName(name))
+                    .thenReturn(false);
+
+            when(customerRepository.existsByEmail(email))
+                    .thenReturn(true);
+
+            // Act & Assert
+            IllegalArgumentException exception = assertThrows(
+                    IllegalArgumentException.class,
+                    () -> customerService.create(dto)
+            );
+
+            assertEquals("Customer with that email already exists", exception.getMessage());
+        }
+
+        @Test
+        public void shouldCreateCustomerWhenUniqueNameAndUniqueEmail() {
             // Arrange
             String name = "Software Factory 123";
             String email = "software_factory_123@gmail.com";
@@ -76,6 +99,9 @@ class CustomerServiceTest {
                     .build();
 
             when(customerRepository.existsByName(name))
+                    .thenReturn(false);
+
+            when(customerRepository.existsByEmail(email))
                     .thenReturn(false);
 
             when(customerRepository.save(ArgumentMatchers.any()))
@@ -115,6 +141,9 @@ class CustomerServiceTest {
                     .thenReturn(Optional.of(savedCustomer));
 
             when(customerRepository.existsByName(name))
+                    .thenReturn(false);
+
+            when(customerRepository.existsByEmail(email))
                     .thenReturn(true);
 
             // Act & Assert
@@ -123,11 +152,11 @@ class CustomerServiceTest {
                     () -> customerService.update(1L, dto)
             );
 
-            assertEquals("Customer with that name already exists", exception.getMessage());
+            assertEquals("Customer with that email already exists", exception.getMessage());
         }
 
         @Test
-        public void shouldUpdateCustomer() {
+        public void shouldUpdateCustomerWithUniqueNameAndEmail() {
             // Arrange
             String name = "Software Factory 123";
             String email = "software_factory_123@gmail.com";
@@ -147,8 +176,43 @@ class CustomerServiceTest {
             when(customerRepository.findById(id))
                     .thenReturn(Optional.of(savedCustomer));
 
+            when(customerRepository.existsByEmail(email))
+                    .thenReturn(false);
+
             when(customerRepository.existsByName(name))
                     .thenReturn(false);
+
+            // Act
+            ReadCustomerDTO result = customerService.update(id, dto);
+
+            // Assert
+            assertAll(
+                    () -> assertEquals(expectedResult.id(), result.id(), "IDs should match"),
+                    () -> assertEquals(expectedResult.name(), result.name(), "Name should match"),
+                    () -> assertEquals(expectedResult.email(), result.email(), "Email should match")
+            );
+        }
+
+        @Test
+        public void shouldNotThrowExceptionWhenNameAndEmailUnchanged() {
+            // Arrange
+            String name = "Software Factory 123";
+            String email = "software_factory_123@gmail.com";
+            Long id = 1L;
+
+            UpdateCustomerDTO dto = new UpdateCustomerDTO(name, email);
+
+            Customer savedCustomer = Customer.builder()
+                    .id(id)
+                    .name(name)
+                    .email(email)
+                    .softDeleteDate(null)
+                    .build();
+
+            ReadCustomerDTO expectedResult = new ReadCustomerDTO(id, name, email, null);
+
+            when(customerRepository.findById(id))
+                    .thenReturn(Optional.of(savedCustomer));
 
             // Act
             ReadCustomerDTO result = customerService.update(id, dto);

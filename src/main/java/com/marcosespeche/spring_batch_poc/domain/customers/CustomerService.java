@@ -46,6 +46,7 @@ public class CustomerService {
     public ReadCustomerDTO create(@Valid CreateCustomerDTO dto) {
 
         validateDuplicatedName(dto.name());
+        validateDuplicatedEmail(dto.email());
 
         Customer customer = Customer.builder()
                 .name(dto.name())
@@ -66,6 +67,8 @@ public class CustomerService {
         Customer customer = findById(id);
 
         if (!customer.getName().equalsIgnoreCase(dto.name())) validateDuplicatedName(dto.name());
+
+        if (!customer.getEmail().equalsIgnoreCase(dto.email())) validateDuplicatedEmail(dto.email());
 
         customer.setName(dto.name());
         customer.setEmail(dto.email());
@@ -99,7 +102,8 @@ public class CustomerService {
         return customerMapper.toReadCustomerDTO(customer);
     }
 
-    private Customer findById(Long id) {
+    @Transactional
+    public Customer findById(Long id) {
         return customerRepository.findById(id).orElseThrow(() -> {
             log.warn("Customer with ID {} cannot be found", id);
             return new EntityNotFoundException("Customer not found");
@@ -108,8 +112,15 @@ public class CustomerService {
 
     private void validateDuplicatedName(String name) {
         if (customerRepository.existsByName(name)) {
-            log.warn("Cannot create customer with duplicated name '{}'", name);
+            log.warn("Cannot create customer with duplicated name");
             throw new IllegalArgumentException("Customer with that name already exists");
+        }
+    }
+
+    private void validateDuplicatedEmail(String email) {
+        if (customerRepository.existsByEmail(email)) {
+            log.warn("Cannot create customer with duplicated email");
+            throw new IllegalArgumentException("Customer with that email already exists");
         }
     }
 

@@ -142,4 +142,49 @@ class CustomerRepositoryTest {
         }
     }
 
+    @Nested
+    @DisplayName("existByEmail method")
+    class ExistByEmailTest {
+
+        @Test
+        public void shouldReturnTrueIfEmailExists() {
+            // Arrange
+            String email = "software_factory_123@gmail.com";
+
+            Customer customer = Customer.builder()
+                    .name("Software Factory 123")
+                    .email(email)
+                    .softDeleteDate(null)
+                    .build();
+
+            entityManager.persistAndFlush(customer);
+
+            // Act
+            boolean result = customerRepository.existsByEmail(email);
+
+            // Assert
+            assertTrue(result);
+        }
+
+        @Test
+        public void shouldReturnFalseIfEmailDoesNotExist() {
+            // Arrange
+            String email = "software_factory_123@gmail.com";
+
+            Customer customer = Customer.builder()
+                    .name("Software Factory 123")
+                    .email(email)
+                    .softDeleteDate(null)
+                    .build();
+
+            entityManager.persistAndFlush(customer);
+
+            // Act
+            boolean result = customerRepository.existsByEmail("restaurant123@gmail.com");
+
+            // Assert
+            assertFalse(result);
+        }
+    }
+
 }
