@@ -234,12 +234,6 @@ class ProjectServiceTest {
             // Arrange
             Long projectId = 1L;
 
-            Customer customer = Customer.builder()
-                    .name("Customer 1")
-                    .email("customer_1@gmail.com")
-                    .softDeleteDate(null)
-                    .build();
-
             Project project = Project.builder()
                     .id(projectId)
                     .name("Project 1")
@@ -264,12 +258,6 @@ class ProjectServiceTest {
         public void shouldRestoreWhenDeleted() {
             // Arrange
             Long projectId = 1L;
-
-            Customer customer = Customer.builder()
-                    .name("Customer 1")
-                    .email("customer_1@gmail.com")
-                    .softDeleteDate(null)
-                    .build();
 
             Project project = Project.builder()
                     .id(projectId)

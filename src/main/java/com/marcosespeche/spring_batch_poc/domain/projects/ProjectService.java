@@ -38,7 +38,7 @@ public class ProjectService {
     @Transactional
     public Page<ReadProjectDTO> findByCustomer(String filter, Pageable pageable, Long customerId) {
 
-        Customer customer = customerService.findById(customerId);
+        customerService.findById(customerId);
 
         Page<Project> projects = projectRepository.findByCustomerIdAndNameContainingIgnoreCase(customerId, filter, pageable);
 
@@ -48,7 +48,7 @@ public class ProjectService {
     @Transactional
     public List<ReadProjectDTO> findActiveByCustomer(String filter, Long customerId) {
 
-        Customer customer = customerService.findById(customerId);
+        customerService.findById(customerId);
 
         List<Project> projects = projectRepository.findByCustomerIdAndNameContainingIgnoreCaseAndSoftDeleteDateIsNull(customerId, filter);
 
