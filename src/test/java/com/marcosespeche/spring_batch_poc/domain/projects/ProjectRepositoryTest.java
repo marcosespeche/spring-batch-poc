@@ -150,4 +150,72 @@ class ProjectRepositoryTest {
         }
     }
 
+    @Nested
+    @DisplayName("existByNameAndCustomerId method")
+    class ExistByNameAndCustomerIdTest {
+
+        @Test
+        public void shouldReturnFalseWhenNameNotDuplicatedForCustomer() {
+            // Arrange
+            Customer customer1 = Customer.builder()
+                    .name("Customer 1")
+                    .email("customer_1@gmail.com")
+                    .softDeleteDate(null)
+                    .build();
+
+            Customer customer2 = Customer.builder()
+                    .name("Customer 2")
+                    .email("customer_2@gmail.com")
+                    .softDeleteDate(null)
+                    .build();
+
+            Project project2 = Project.builder()
+                    .name("Project 2")
+                    .description("Project 2")
+                    .customer(customer1)
+                    .softDeleteDate(null)
+                    .build();
+
+            entityManager.persist(customer1);
+            entityManager.persist(customer2);
+            entityManager.persist(project2);
+
+            entityManager.flush();
+
+            // Act
+            boolean result = projectRepository.existsByNameAndCustomerId("Project 2", customer2.getId());
+
+            // Assert
+            assertFalse(result);
+        }
+
+        @Test
+        public void shouldReturnTrueWhenNameDuplicatedForCustomer() {
+            // Arrange
+            Customer customer1 = Customer.builder()
+                    .name("Customer 1")
+                    .email("customer_1@gmail.com")
+                    .softDeleteDate(null)
+                    .build();
+
+            Project project2 = Project.builder()
+                    .name("Project 2")
+                    .description("Project 2")
+                    .customer(customer1)
+                    .softDeleteDate(null)
+                    .build();
+
+            entityManager.persist(customer1);
+            entityManager.persist(project2);
+
+            entityManager.flush();
+
+            // Act
+            boolean result = projectRepository.existsByNameAndCustomerId("Project 2", customer1.getId());
+
+            // Assert
+            assertTrue(result);
+        }
+    }
+
 }

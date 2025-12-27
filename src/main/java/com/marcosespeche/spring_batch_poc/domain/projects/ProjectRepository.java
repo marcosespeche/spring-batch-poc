@@ -14,4 +14,6 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
     Page<Project> findByCustomerIdAndNameContainingIgnoreCase(Long customerId, String filter, Pageable pageable);
 
     List<Project> findByCustomerIdAndNameContainingIgnoreCaseAndSoftDeleteDateIsNull(Long customerId, String filter);
+
+    boolean existsByNameAndCustomerId(String name, Long customerId);
 }
