@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -119,6 +120,21 @@ public class ProjectService {
             log.warn("Project with ID {} cannot be found", id);
             return new EntityNotFoundException("Project not found");
         });
+    }
+
+    @Transactional
+    public Project findActiveById(Long id) {
+        Project project = projectRepository.findById(id).orElseThrow(() -> {
+            log.warn("Project with ID {} can not be found", id);
+            return new EntityNotFoundException("Project not found");
+        });
+
+        if (project.getSoftDeleteDate() != null) {
+            log.warn("Project with ID {} is not active", id);
+            throw new IllegalArgumentException("Project is not active");
+        }
+
+        return project;
     }
 
     private void validateDuplicatedName(String name, Long customerId) {
