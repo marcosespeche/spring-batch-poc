@@ -19,6 +19,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.time.YearMonth;
 
 @Slf4j
@@ -108,6 +109,10 @@ public class AgreementService {
     @Transactional
     public ReadAgreementDTO accept(Long id) {
         Agreement agreement = findById(id);
+
+        YearMonth actualPeriod = YearMonth.now();
+
+        if (actualPeriod.isAfter(agreement.getStartingPeriod())) throw new IllegalArgumentException("Starting period already passed");
 
         if (!agreement.getState().equals(AgreementState.PROVISIONAL)) {
             log.warn("Agreement with ID {} can not be accepted because is already accepted", id);
