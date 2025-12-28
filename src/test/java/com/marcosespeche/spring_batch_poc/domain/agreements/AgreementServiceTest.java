@@ -25,6 +25,7 @@ import java.time.YearMonth;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -363,4 +364,171 @@ class AgreementServiceTest {
         }
     }
 
+    @Nested
+    @DisplayName("delete method")
+    class DeleteTest {
+
+        @Test
+        public void shouldThrowExceptionWhenAgreementNotFound() {
+            // Arrange
+            Long agreementId = 1L;
+
+            when(agreementRepository.findById(agreementId))
+                    .thenReturn(Optional.empty());
+
+            // Act & Assert
+            EntityNotFoundException exception = assertThrows(
+                    EntityNotFoundException.class,
+                    () -> agreementService.delete(agreementId)
+            );
+
+            assertEquals("Agreement not found", exception.getMessage());
+        }
+
+        @Test
+        public void shouldThrowExceptionWhenAgreementStateIsNotProvisional() {
+            // Arrange
+            Long agreementId = 1L;
+
+            Agreement agreement = Agreement.builder()
+                    .id(agreementId)
+                    .startingPeriod(YearMonth.of(2025, 1))
+                    .endingPeriod(YearMonth.of(2026, 1))
+                    .acceptedAt(LocalDateTime.now())
+                    .state(AgreementState.IN_COURSE)
+                    .build();
+
+            when(agreementRepository.findById(agreementId))
+                    .thenReturn(Optional.of(agreement));
+
+            // Act & Assert
+            IllegalArgumentException exception = assertThrows(
+                    IllegalArgumentException.class,
+                    () -> agreementService.delete(agreementId)
+            );
+
+            assertEquals("Agreement already accepted", exception.getMessage());
+        }
+
+        @Test
+        public void shouldDeleteAgreementWhenStateIsProvisional() {
+            // Arrange
+            Long agreementId = 1L;
+
+            Agreement agreement = Agreement.builder()
+                    .id(agreementId)
+                    .startingPeriod(YearMonth.of(2025, 1))
+                    .endingPeriod(YearMonth.of(2026, 1))
+                    .acceptedAt(LocalDateTime.now())
+                    .state(AgreementState.PROVISIONAL)
+                    .build();
+
+            when(agreementRepository.findById(agreementId))
+                    .thenReturn(Optional.of(agreement));
+
+            // Act
+            agreementService.delete(agreementId);
+
+            // Assert
+            verify(agreementRepository).deleteById(agreementId);
+        }
+    }
+
+    @Nested
+    @DisplayName("accept method")
+    class AcceptTest {
+
+        @Test
+        public void shouldThrowExceptionWhenAgreementNotFound() {
+            // Arrange
+            Long agreementId = 1L;
+
+            when(agreementRepository.findById(agreementId))
+                    .thenReturn(Optional.empty());
+
+            // Act & Assert
+            EntityNotFoundException exception = assertThrows(
+                    EntityNotFoundException.class,
+                    () -> agreementService.accept(agreementId)
+            );
+
+            assertEquals("Agreement not found", exception.getMessage());
+        }
+
+        @Test
+        public void shouldThrowExceptionWhenStartingPeriodBeforeActualPeriod() {
+            // Arrange
+            Long agreementId = 1L;
+
+            Agreement agreement = Agreement.builder()
+                    .id(agreementId)
+                    .startingPeriod(YearMonth.now().minusMonths(1))
+                    .endingPeriod(YearMonth.now().plusMonths(12))
+                    .acceptedAt(null)
+                    .state(AgreementState.PROVISIONAL)
+                    .build();
+
+            when(agreementRepository.findById(agreementId))
+                    .thenReturn(Optional.of(agreement));
+
+            // Act & Assert
+            IllegalArgumentException exception = assertThrows(
+                    IllegalArgumentException.class,
+                    () -> agreementService.accept(agreementId)
+            );
+
+            assertEquals("Starting period already passed", exception.getMessage());
+        }
+
+        @Test
+        public void shouldThrowExceptionWhenAgreementStateIsNotProvisional() {
+            // Arrange
+            Long agreementId = 1L;
+
+            Agreement agreement = Agreement.builder()
+                    .id(agreementId)
+                    .startingPeriod(YearMonth.now().plusMonths(1))
+                    .endingPeriod(YearMonth.now().plusMonths(12))
+                    .acceptedAt(null)
+                    .state(AgreementState.ACCEPTED)
+                    .build();
+
+            when(agreementRepository.findById(agreementId))
+                    .thenReturn(Optional.of(agreement));
+
+            // Act & Assert
+            IllegalArgumentException exception = assertThrows(
+                    IllegalArgumentException.class,
+                    () -> agreementService.accept(agreementId)
+            );
+
+            assertEquals("Agreement already accepted", exception.getMessage());
+        }
+
+        @Test
+        public void shouldAcceptAgreement() {
+            // Arrange
+            Long agreementId = 1L;
+
+            Agreement agreement = Agreement.builder()
+                    .id(agreementId)
+                    .startingPeriod(YearMonth.now().plusMonths(1))
+                    .endingPeriod(YearMonth.now().plusMonths(12))
+                    .acceptedAt(null)
+                    .state(AgreementState.PROVISIONAL)
+                    .build();
+
+            when(agreementRepository.findById(agreementId))
+                    .thenReturn(Optional.of(agreement));
+
+            // Act
+            ReadAgreementDTO result = agreementService.accept(agreementId);
+
+            // Assert
+            assertAll(
+                    () -> assertNotNull(result, "Result should not be null"),
+                    () -> assertEquals(AgreementState.ACCEPTED, result.state(), "State should be 'Accepted'")
+            );
+        }
+    }
 }
