@@ -280,4 +280,86 @@ class ProjectServiceTest {
         }
     }
 
+    @Nested
+    @DisplayName("findActiveById method")
+    class FindActiveByIdTest {
+
+        @Test
+        public void shouldThrowExceptionWhenProjectNotFound() {
+            // Arrange
+            Long projectId = 1L;
+
+            // Act & Assert
+            EntityNotFoundException exception = assertThrows(
+                    EntityNotFoundException.class,
+                    () -> projectService.findActiveById(projectId)
+            );
+
+            assertEquals("Project not found", exception.getMessage());
+        }
+
+        @Test
+        public void shouldThrowExceptionWhenProjectIsNotActive() {
+            // Arrange
+            Long projectId = 1L;
+
+            Customer customer = Customer.builder()
+                    .name("Customer")
+                    .email("customer@gmail.com")
+                    .softDeleteDate(null)
+                    .build();
+
+            Project project = Project.builder()
+                    .id(projectId)
+                    .customer(customer)
+                    .name("Project")
+                    .description("Description")
+                    .softDeleteDate(LocalDateTime.now())
+                    .build();
+
+            when(projectRepository.findById(projectId))
+                    .thenReturn(Optional.of(project));
+
+            // Act & Assert
+            IllegalArgumentException exception = assertThrows(
+                    IllegalArgumentException.class,
+                    () -> projectService.findActiveById(projectId)
+            );
+
+            assertEquals("Project is not active", exception.getMessage());
+        }
+
+        @Test
+        public void shouldReturnProject() {
+            // Arrange
+            Long projectId = 1L;
+
+            Customer customer = Customer.builder()
+                    .name("Customer")
+                    .email("customer@gmail.com")
+                    .softDeleteDate(null)
+                    .build();
+
+            Project project = Project.builder()
+                    .id(projectId)
+                    .customer(customer)
+                    .name("Project")
+                    .description("Description")
+                    .softDeleteDate(null)
+                    .build();
+
+            when(projectRepository.findById(projectId))
+                    .thenReturn(Optional.of(project));
+
+            // Act
+            Project result = projectService.findActiveById(projectId);
+
+            assertAll(
+                    () -> assertNotNull(result, "Result should not be null"),
+                    () -> assertEquals(project.getName(), result.getName(), "Name should match"),
+                    () -> assertEquals(project.getDescription(), result.getDescription(), "Description should match")
+            );
+        }
+    }
+
 }
