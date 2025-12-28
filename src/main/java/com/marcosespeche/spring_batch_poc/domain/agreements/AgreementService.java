@@ -27,14 +27,12 @@ public class AgreementService {
 
     private final AgreementRepository agreementRepository;
     private final AgreementMapper agreementMapper;
-    private final CustomerService customerService;
     private final ProjectService projectService;
 
     @Autowired
     public AgreementService(AgreementRepository agreementRepository, AgreementMapper agreementMapper, CustomerService customerService, ProjectService projectService) {
         this.agreementRepository = agreementRepository;
         this.agreementMapper = agreementMapper;
-        this.customerService = customerService;
         this.projectService = projectService;
     }
 
