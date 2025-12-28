@@ -45,8 +45,7 @@ public class AgreementService {
     @Transactional
     public ReadAgreementDTO create(@Valid CreateAgreementDTO dto) {
 
-        if (dto.startingYear() > dto.endingYear()) throw new IllegalArgumentException("Starting year can not be later than ending year");
-        if (dto.startingYear() == dto.endingYear() && dto.startingMonth() > dto.endingMonth()) throw new IllegalArgumentException("Starting month can not be later than ending month");
+        validatePeriods(dto.startingYear(), dto.endingYear(), dto.startingMonth(), dto.endingMonth());
 
         Project project = projectService.findActiveById(dto.projectId());
 
@@ -82,6 +81,8 @@ public class AgreementService {
              log.warn("Agreement with ID {} can not be modified because is already accepted", id);
              throw new IllegalArgumentException("Agreement already accepted");
          }
+
+        validatePeriods(dto.startingYear(), dto.endingYear(), dto.startingMonth(), dto.endingMonth());
 
         agreement.setStartingPeriod(YearMonth.of(dto.startingYear(), dto.startingMonth()));
         agreement.setEndingPeriod(YearMonth.of(dto.endingYear(), dto.endingMonth()));
@@ -127,6 +128,11 @@ public class AgreementService {
             log.warn("Agreement with ID {} can not be found", id);
             return new EntityNotFoundException("Agreement not found");
         });
+    }
+
+    private static void validatePeriods(int startingYear, int endingYear, int startingMonth, int endingMonth) {
+        if (startingYear > endingYear) throw new IllegalArgumentException("Starting year can not be later than ending year");
+        if (startingYear == endingYear && startingMonth >= endingMonth) throw new IllegalArgumentException("Starting month can not be later than ending month");
     }
 
 }
