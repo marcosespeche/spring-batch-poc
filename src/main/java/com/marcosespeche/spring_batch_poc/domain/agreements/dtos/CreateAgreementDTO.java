@@ -10,7 +10,7 @@ public record CreateAgreementDTO(
                 description = "Agreement starting month",
                 example = "1"
         )
-        @Min(value = 1, message = "Month can not be lower than 1")
+        @Min(value = 0, message = "Month can not be lower than 1")
         @Max(value = 12, message = "Month can not be higher than 12")
         int startingMonth,
 
@@ -18,8 +18,7 @@ public record CreateAgreementDTO(
                 description = "Agreement starting year",
                 example = "2025"
         )
-        @Min(value = 1, message = "Month can not be lower than 1")
-        @Max(value = 12, message = "Month can not be higher than 12")
+        @Min(value = 0, message = "Year can not be lower than 0")
         int startingYear,
 
         @Schema(
@@ -34,8 +33,7 @@ public record CreateAgreementDTO(
                 description = "Agreement ending year",
                 example = "2026"
         )
-        @Min(value = 1, message = "Month can not be lower than 1")
-        @Max(value = 12, message = "Month can not be higher than 12")
+        @Min(value = 0, message = "Year can not be lower than 0")
         int endingYear,
 
         @Schema(
