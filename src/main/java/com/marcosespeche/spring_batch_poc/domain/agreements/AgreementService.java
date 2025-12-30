@@ -135,6 +135,11 @@ public class AgreementService {
         });
     }
 
+    @Transactional
+    public Agreement save(Agreement agreement) {
+        return agreementRepository.save(agreement);
+    }
+
     private static void validatePeriods(int startingYear, int endingYear, int startingMonth, int endingMonth) {
         if (startingYear > endingYear) throw new IllegalArgumentException("Starting year can not be later than ending year");
         if (startingYear == endingYear && startingMonth >= endingMonth) throw new IllegalArgumentException("Starting month can not be later than ending month");

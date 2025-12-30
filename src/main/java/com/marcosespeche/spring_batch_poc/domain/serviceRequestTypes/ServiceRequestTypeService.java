@@ -100,7 +100,7 @@ public class ServiceRequestTypeService {
         return serviceRequestTypeMapper.toReadServiceRequestDTO(serviceRequestType);
     }
 
-    private ServiceRequestType findById(Long id) {
+    public ServiceRequestType findById(Long id) {
         return serviceRequestTypeRepository.findById(id)
                 .orElseThrow(() -> {
                     log.warn("Service Request Type with ID {} not found", id);
