@@ -1,6 +1,7 @@
 package com.marcosespeche.spring_batch_poc.domain.billingProcess;
 
 import com.marcosespeche.spring_batch_poc.entities.BillingProcess;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.job.Job;
 import org.springframework.batch.core.job.parameters.InvalidJobParametersException;
 import org.springframework.batch.core.job.parameters.JobParameters;
@@ -13,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 public class BillingProcessScheduler {
 
@@ -30,6 +32,7 @@ public class BillingProcessScheduler {
     // First day of the month
     @Scheduled(cron = "0 0 2 1 * ?")
     public void executeMonthlyBillingProcess() {
+        log.info("Starting billing process");
 
         BillingProcess monthlyBillingProcess = billingProcessService.createMonthlyBillingProcessIfNotExists();
 
@@ -44,6 +47,7 @@ public class BillingProcessScheduler {
 
         } catch (JobExecutionAlreadyRunningException | JobRestartException | JobInstanceAlreadyCompleteException |
                  InvalidJobParametersException e) {
+            log.error("Error during billing process");
             throw new RuntimeException(e.getMessage(), e);
         }
 

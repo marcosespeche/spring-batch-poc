@@ -5,6 +5,7 @@ import com.marcosespeche.spring_batch_poc.domain.serviceRequestTypes.ServiceRequ
 import com.marcosespeche.spring_batch_poc.domain.serviceRequests.dtos.CreateServiceRequestDTO;
 import com.marcosespeche.spring_batch_poc.domain.serviceRequests.dtos.ReadServiceRequestDTO;
 import com.marcosespeche.spring_batch_poc.entities.Agreement;
+import com.marcosespeche.spring_batch_poc.entities.Customer;
 import com.marcosespeche.spring_batch_poc.entities.ServiceRequest;
 import com.marcosespeche.spring_batch_poc.entities.ServiceRequestType;
 import com.marcosespeche.spring_batch_poc.enums.AgreementState;
@@ -20,6 +21,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.YearMonth;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -130,6 +134,23 @@ public class ServiceRequestService {
 
         serviceRequestRepository.deleteById(id);
         log.info("Service Request with ID {} deleted", id);
+    }
+
+    @Transactional
+    public List<ServiceRequest> findByCustomerIdAndPeriodAndSServiceStateAndAgreementState(
+            Customer customer,
+            YearMonth period,
+            List<ServiceRequestState> serviceStatesToBill,
+            List<AgreementState> agreementStates) {
+
+        LocalDateTime startingDayOfMonth = period.atDay(1).atStartOfDay();
+        LocalDateTime endingDayOfMonth = period.atEndOfMonth().atTime(LocalTime.MAX);
+        return serviceRequestRepository.findByCustomerAndStateInAndPeriod(
+                customer.getId(),
+                startingDayOfMonth,
+                endingDayOfMonth,
+                serviceStatesToBill,
+                agreementStates);
     }
 
     private ServiceRequest findById(Long id) {
